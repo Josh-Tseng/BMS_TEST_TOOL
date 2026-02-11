@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta http-equiv="x-dns-prefetch-control" content="off">
+    <meta name="x-poe-allow-downloads" content="true">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLE通訊APP</title>
+    <!-- 為了讓手機能夠呼叫相機掃描 Barcode/QR Code，我們需要引入 html5-qrcode 函式庫 -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <style>
+        /* 基本的 Tailwind 樣式 - 生產環境版本 */
+        *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::before,::after{--tw-content:''}html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,"Menlo","Monaco","Consolas","Liberation Mono","Courier New",monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,[type='button'],[type='reset'],[type='submit']{-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type='search']{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dl,dd,h1,h2,h3,h4,h5,h6,hr,figure,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role="button"]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}
+
+        /* 主要樣式類 */
+        .bg-white { background-color: #ffffff; } .bg-gray-50 { background-color: #f9fafb; } .bg-gray-100 { background-color: #f3f4f6; } .bg-gray-200 { background-color: #e5e7eb; } .bg-gray-700 { background-color: #374151; } .bg-gray-800 { background-color: #1f2937; } .bg-gray-900 { background-color: #111827; } .bg-red-50 { background-color: #fef2f2; } .bg-red-500 { background-color: #ef4444; } .bg-green-500 { background-color: #10b981; } .bg-yellow-50 { background-color: #fffbeb; } .text-white { color: #ffffff; } .text-gray-300 { color: #d1d5db; } .text-gray-400 { color: #9ca3af; } .text-gray-500 { color: #6b7280; } .text-gray-600 { color: #4b5563; } .text-gray-700 { color: #374151; } .text-gray-900 { color: #111827; } .text-red-700 { color: #b91c1c; } .text-red-800 { color: #991b1b; } .text-yellow-700 { color: #a16207; } .text-yellow-800 { color: #92400e; } .text-green-600 { color: #059669; } .text-green-400 { color: #34d399; }
+        
+        /* 主色調 */
+        .bg-primary, .bg-\[--primary\] { background-color: #5D5CDE; } .text-primary, .text-\[--primary\] { color: #5D5CDE; } .border-primary { border-color: #5D5CDE; } .ring-primary { --tw-ring-color: #5D5CDE; }
+        
+        /* 深色模式 */
+        .dark .dark\:bg-gray-800 { background-color: #1f2937; } .dark .dark\:bg-gray-900 { background-color: #111827; } .dark .dark\:bg-red-900\/20 { background-color: rgba(127, 29, 29, 0.2); } .dark .dark\:bg-yellow-900\/20 { background-color: rgba(120, 53, 15, 0.2); } .dark .dark\:text-white { color: #ffffff; } .dark .dark\:text-gray-300 { color: #d1d5db; } .dark .dark\:text-gray-400 { color: #9ca3af; } .dark .dark\:text-red-300 { color: #fca5a5; } .dark .dark\:text-red-400 { color: #f87171; } .dark .dark\:text-yellow-300 { color: #fcd34d; } .dark .dark\:text-yellow-400 { color: #facc15; } .dark .dark\:text-green-400 { color: #34d399; } .dark .dark\:border-gray-600 { border-color: #4b5563; } .dark .dark\:border-gray-700 { border-color: #374151; } .dark .dark\:border-red-700 { border-color: #b91c1c; } .dark .dark\:border-yellow-700 { border-color: #a16207; }
+        
+        /* 佈局 */
+        .min-h-screen { min-height: 100vh; } .max-w-md { max-width: 28rem; } .max-w-2xl { max-width: 42rem; } .w-full { width: 100%; } .w-2 { width: 0.5rem; } .w-4 { width: 1rem; } .w-5 { width: 1.25rem; } .h-2 { height: 0.5rem; } .h-4 { height: 1rem; } .h-5 { height: 1.25rem; } .h-40 { height: 10rem; } .min-h-\[3rem\] { min-height: 3rem; }
+        
+        /* 間距 */
+        .p-1 { padding: 0.25rem; } .p-2 { padding: 0.5rem; } .p-3 { padding: 0.75rem; } .p-4 { padding: 1rem; } .p-6 { padding: 1.5rem; } .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; } .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; } .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; } .py-4 { padding-top: 1rem; padding-bottom: 1rem; } .py-8 { padding-top: 2rem; padding-bottom: 2rem; } .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; } .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; } .px-4 { padding-left: 1rem; padding-right: 1rem; } .m-4 { margin: 1rem; } .mx-4 { margin-left: 1rem; margin-right: 1rem; } .mx-auto { margin-left: auto; margin-right: auto; } .mb-1 { margin-bottom: 0.25rem; } .mb-2 { margin-bottom: 0.5rem; } .mb-3 { margin-bottom: 0.75rem; } .mb-4 { margin-bottom: 1rem; } .mb-6 { margin-bottom: 1.5rem; } .mb-8 { margin-bottom: 2rem; } .mr-1 { margin-right: 0.25rem; } .mr-2 { margin-right: 0.5rem; } .ml-1 { margin-left: 0.25rem; } .ml-2 { margin-left: 0.5rem; } .mt-2 { margin-top: 0.5rem; }
+        
+        /* Flexbox */
+        .flex { display: flex; } .inline-block { display: inline-block; } .hidden { display: none; } .items-center { align-items: center; } .justify-between { justify-content: space-between; } .justify-end { justify-content: flex-end; } .space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; } .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; } .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; } .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; }
+        
+        /* Grid */
+        .grid { display: grid; } .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); } .grid-cols-15 { grid-template-columns: repeat(15, minmax(0, 1fr)); } .col-span-5 { grid-column: span 5 / span 5; } .gap-1 { gap: 0.25rem; } .gap-2 { gap: 0.5rem; } .gap-4 { gap: 1rem; }
+        
+        /* 字體 */
+        .text-xs { font-size: 0.75rem; } .text-sm { font-size: 0.875rem; } .text-base { font-size: 1rem; } .text-lg { font-size: 1.125rem; } .text-xl { font-size: 1.25rem; } .text-2xl { font-size: 1.5rem; } .font-medium { font-weight: 500; } .font-bold { font-weight: 700; } .font-semibold { font-weight: 600; } .text-center { text-align: center; } .uppercase { text-transform: uppercase; }
+        
+        /* 邊框 */
+        .border { border-width: 1px; } .border-2 { border-width: 2px; } .border-gray-200 { border-color: #e5e7eb; } .border-gray-300 { border-color: #d1d5db; } .border-red-200 { border-color: #fecaca; } .border-yellow-200 { border-color: #fde68a; } .border-white { border-color: #ffffff; } .border-t-transparent { border-top-color: transparent; } .rounded { border-radius: 0.25rem; } .rounded-md { border-radius: 0.375rem; } .rounded-lg { border-radius: 0.5rem; } .rounded-full { border-radius: 9999px; }
+        
+        /* 陰影和效果 */
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); } .opacity-0 { opacity: 0; }
+        
+        /* 位置 */
+        .fixed { position: fixed; } .top-4 { top: 1rem; } .right-4 { right: 1rem; } .z-50 { z-index: 50; }
+        
+        /* 互動效果 */
+        .cursor-pointer { cursor: pointer; } .transition-colors { transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .transition-all { transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1); } .duration-300 { transition-duration: 300ms; }
+        
+        /* Hover 效果 */
+        .hover\:bg-primary\/90:hover { background-color: rgba(93, 92, 222, 0.9); } .hover\:bg-red-600:hover { background-color: #dc2626; } .hover\:bg-gray-300:hover { background-color: #d1d5db; } .hover\:bg-gray-600:hover { background-color: #4b5563; } .hover\:bg-gray-700:hover { background-color: #374151; } .hover\:text-primary\/80:hover { color: rgba(93, 92, 222, 0.8); } .hover\:text-red-600:hover { color: #dc2626; }
+        
+        /* Focus 效果 */
+        .focus\:ring-2:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px var(--tw-ring-color); } .focus\:ring-primary:focus { --tw-ring-color: #5D5CDE; } .focus\:border-transparent:focus { border-color: transparent; }
+        
+        /* 動畫 */
+        .animate-spin { animation: spin 1s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        /* 彈性佈局 */
+        .flex-wrap { flex-wrap: wrap; } .flex-grow { flex-grow: 1; }
+        
+        /* 其他 */
+        .resize-none { resize: none; } .font-mono { font-family: ui-monospace, SFMono-Regular, "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace; }
+
+        .text-blue-500 { color: #3b82f6; }
+        .text-blue-600 { color: #2563eb; }
+        .font-bold { font-weight: 700; }
+    </style>
+    <style>
+        .hex-input {
+            font-family: 'Courier New', monospace;
+        }
+        .btn-disconnect {
+            background-color: #ef4444; /* red-500 */
+        }
+        .btn-disconnect:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+        .btn-reconnect {
+            background-color: #5D5CDE; /* primary */
+        }
+        .btn-reconnect:hover {
+            background-color: rgba(93, 92, 222, 0.9); /* primary/90 */
+        }
+        /* 新增：參數控制項目的樣式 */
+        .param-control-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        .dark .param-control-item {
+            border-color: #374151; /* dark:border-gray-700 */
+        }
+        .param-control-item:last-child {
+            border-bottom: none;
+        }
+        .param-label {
+            font-weight: 500;
+            min-width: 100px;
+        }
+        .param-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+        .param-btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            transition: background-color 150ms;
+        }
+        .param-value-display {
+            font-family: 'Courier New', monospace;
+            background-color: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            min-width: 50px;
+            text-align: center;
+            color: #0f59cf; /* 字體顏色為藍色 */
+        }
+        .dark .param-value-display {
+            background-color: #374151;
+        }
+    </style>
+    <style>
+        /* ========== 儀表板專用離線樣式 (Start) ========== */
+        :root {
+            --bg-dark: #0f172a;       /* 深色背景 */
+            --bg-panel: #1e293b;      /* 卡片背景 */
+            --text-main: #f8fafc;     /* 主要文字 */
+            --text-muted: #94a3b8;    /* 次要文字 */
+            --border-color: #334155;  /* 邊框顏色 */
+            --accent-blue: #3b82f6;   /* 藍色 */
+            --accent-red: #ef4444;    /* 紅色 */
+            --accent-green: #22c55e;  /* 綠色 */
+        }
+
+        .dashboard-container {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .dashboard-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: calc(100vh - 2rem);
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* 側邊欄樣式 */
+        .sidebar {
+            width: 25%;
+            background-color: var(--bg-panel);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .step-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        /* 測試步驟項目 */
+        .test-step {
+            padding: 0.75rem;
+            background-color: var(--bg-dark);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+        .test-step:hover { border-color: var(--text-muted); opacity: 1; }
+        .test-step.active { border-color: var(--accent-blue); opacity: 1; }
+    
+        .step-content { display: flex; align-items: center; justify-content: space-between; }
+        .step-num { 
+            width: 1.5rem; height: 1.5rem; border-radius: 9999px; 
+            border: 1px solid var(--text-muted); color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center; font-size: 0.75rem; margin-right: 0.75rem;
+        }
+
+        /* 右側主區域 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* 頂部狀態列 */
+        .status-bar {
+            height: 4rem;
+            background-color: var(--bg-panel);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+    
+        .status-indicator { width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.75rem; }
+        .status-red { background-color: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); animation: pulse 2s infinite; }
+        .status-green { background-color: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+
+        /* 數據卡片網格 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            height: 12rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-panel);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-value { font-size: 3rem; font-weight: 700; font-family: monospace; line-height: 1; margin-bottom: 0.5rem; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    
+        /* 顏色變化文字 */
+        .text-green { color: var(--accent-green); }
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+
+        /* 日誌區域 */
+        .log-container {
+            flex: 1;
+            background-color: #000;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .log-header {
+            height: 2rem;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .log-content {
+            flex: 1;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            overflow-y: auto;
+            color: var(--text-muted);
+        }
+
+        /* 通用按鈕 */
+        .btn-dark {
+            width: 100%;
+            background-color: #334155;
+            color: #cbd5e1;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .btn-dark:hover { background-color: #475569; }
+
+        .btn-outline-red {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            padding: 0.25rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+        .btn-outline-red:hover { background-color: var(--accent-red); color: white; }
+
+        .btn-sm-blue {
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            background-color: var(--accent-blue);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+        }
+        .btn-sm-blue:hover { opacity: 0.9; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+        /* 滾動條美化 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        /* ========== 儀表板專用離線樣式 (End) ========== */
+
+        /* ========== 掃描頁專用離線樣式 (Start) ========== */
+        .scan-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .scan-card {
+            background-color: var(--bg-panel); /* 使用儀表板同款深藍色 */
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* 強烈的陰影 */
+            width: 100%;
+            max-width: 28rem;
+            position: relative;
+        }
+
+        .scan-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.1em;
+            color: white;
+        }
+
+        .scan-input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .scan-input {
+            width: 100%;
+            background-color: var(--bg-dark); /* 深色輸入框底色 */
+            color: white;
+            font-size: 1.25rem;
+            padding: 1rem;
+            padding-right: 3rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            outline: none;
+            font-family: monospace;
+            letter-spacing: 0.05em;
+            transition: border-color 0.2s;
+        }
+
+        .scan-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 1px var(--accent-blue);
+        }
+
+        .scan-camera-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            bottom: 0.5rem;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 0.5rem;
+        }
+        .scan-camera-btn:hover { color: white; }
+        .scan-camera-btn.active { color: var(--accent-red); animation: pulse 1s infinite; }
+
+        .scan-btn-main {
+            width: 100%;
+            background-color: var(--accent-blue);
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: opacity 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .scan-btn-main:hover { opacity: 0.9; }
+        .scan-btn-main:active { transform: scale(0.98); }
+
+        .scan-btn-cancel {
+            width: 100%;
+            margin-top: 1rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .scan-btn-cancel:hover { color: var(--text-main); }
+    
+        /* 掃描視窗區域 */
+        #reader {
+            width: 100%;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 2px dashed var(--border-color);
+        }
+        /* ========== 掃描頁專用離線樣式 (End) ========== */
+    </style>
+</head>
+
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+    <div id="deviceListPage" class="min-h-screen p-4">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-2xl font-bold text-center mb-8 text-primary">BLE設備連線</h1>
+            
+            <div class="mb-6">
+                <button id="scanBtn" class="w-full bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    <span id="scanText">掃描BLE設備</span>
+                    <div id="scanSpinner" class="hidden inline-block w-4 h-4 ml-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </button>
+            </div>
+
+            <div id="environmentWarning" class="hidden mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                <h3 class="text-sm font-medium text-red-800 dark:text-red-300 mb-2">⚠️ 無法使用藍牙功能</h3>
+                <p class="text-xs text-red-700 dark:text-red-400 mb-3">
+                    當前iframe環境不支援Web Bluetooth API。要使用真實的BLE功能，請：
+                </p>
+                <div class="text-xs text-red-700 dark:text-red-400 space-y-1 mb-3">
+                    <div>1. 複製完整的HTML代碼</div>
+                    <div>2. 儲存為.html文件（如 ble-app.html）</div>
+                    <div>3. 使用本地服務器運行（如 python -m http.server）</div>
+                    <div>4. 在瀏覽器中打開 https://localhost:8000/ble-app.html</div>
+                </div>
+                <button id="showCodeBtn" class="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
+                    顯示完整代碼
+                </button>
+            </div>
+
+            <div class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-2">使用說明：</h3>
+                <ul class="text-xs text-yellow-700 dark:text-yellow-400 space-y-1">
+                    <li>• 請確保硬件設備支援BLE並已開啟</li>
+                    <li>• 需要修改代碼中的SERVICE_UUID和CHARACTERISTIC_UUID以匹配您的硬件</li>
+                    <li>• 只支援Chrome, Edge等現代瀏覽器</li>
+                    <li>• 需要在HTTPS環境下使用（不能是iframe）</li>
+                </ul>
+            </div>
+
+            <div id="codeDisplay" class="mb-6 hidden">
+                <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium">完整HTML代碼：</h3>
+                        <button id="copyCodeBtn" class="text-xs bg-primary text-white px-2 py-1 rounded hover:bg-primary/90">
+                            複製代碼
+                        </button>
+                    </div>
+                    <textarea id="fullCode" class="w-full h-40 text-xs font-mono bg-white dark:bg-gray-900 p-2 rounded border resize-none" readonly=""></textarea>
+                </div>
+            </div>
+
+            <div id="deviceList" class="space-y-3">
+                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                    點擊掃描按鈕搜尋附近的BLE設備
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardPage" class="hidden dashboard-container p-4">
+        <div class="dashboard-wrapper">
+            
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2 class="text-xl font-bold" style="letter-spacing: 0.05em;">測試流程</h2>
+                </div>
+                
+                <div class="step-list">
+                    <div class="test-step" id="step1">
+                        <div class="step-content">
+                            <div class="flex items-center">
+                                <div class="step-num">1</div>
+                                <span class="text-sm font-medium">比對內外電池序號</span>
+                            </div>
+                            <span class="text-xs text-muted">IDLE</span>
+                        </div>
+                    </div>
+
+                    <div class="test-step active" id="step2">
+                        <div class="step-content">
+                            <div class="flex items-center">
+                                <div class="step-num" style="border-color:var(--accent-blue); color:var(--accent-blue);">2</div>
+                                <span class="text-sm font-medium">讀取 BMS 資訊</span>
+                            </div>
+                            <span class="text-xs text-blue">AUTO</span>
+                        </div>
+                    </div>
+
+                    <div class="test-step" id="step3">
+                        <div class="step-content">
+                            <div class="flex items-center">
+                                <div class="step-num">3</div>
+                                <span class="text-sm font-medium">開啟 WakeUp 偵測</span>
+                            </div>
+                            <span class="text-xs text-muted">IDLE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-700" style="border-top: 1px solid var(--border-color); margin-top: auto; padding-top: 1rem;">
+                    <button id="dash_backBtn" class="btn-dark">
+                        返回搜尋頁面
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                
+                <div class="status-bar">
+                    <div class="flex items-center">
+                        <div id="statusDot" class="status-indicator status-red"></div>
+                        <span id="headerStatusText" class="text-gray-300 font-mono text-sm">Status: Disconnected</span>
+                    </div>
+                    <div class="text-gray-400 text-sm italic">Model: BatteryTester-V2.5</div>
+                    <button id="dash_disconnectReconnectBtn" class="btn-outline-red">
+                        中斷連線
+                    </button>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="stat-card">
+                        <div class="stat-value text-white" id="dashboardVoltage">0.0</div>
+                        <div class="stat-label">電壓 (mV)</div>
+                        <div style="position:absolute; top:10px; right:10px; width:8px; height:8px; background:var(--border-color); border-radius:50%;"></div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-value text-white" id="dashboardCurrent">0.0</div>
+                        <div class="stat-label">電流 (mA)</div>
+                        <div style="position:absolute; bottom:20px; width:60px; height:4px; background:var(--accent-red); border-radius:2px; opacity:0.5;"></div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-value text-green" style="font-size: 5rem;">
+                            <span id="dashboardSOC">0</span><span style="font-size:2rem; margin-left:0.5rem;">%</span>
+                        </div>
+                        <div class="stat-label">電量 (SOC)</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label text-blue" style="margin-bottom:1rem;">電池序列號 (SN)</div>
+                        <div class="text-xl font-bold font-mono" id="dashboardSN" style="border-bottom: 1px dashed var(--text-muted); padding-bottom: 0.25rem; letter-spacing: 0.1em;">
+                            -- -- -- --
+                        </div>
+                        <button id="readDashBmsSnBtn" class="btn-sm-blue">
+                            讀取BMS內部SN
+                        </button>
+                    </div>
+                </div>
+
+                <div class="log-container">
+                    <div class="log-header">
+                        <span style="font-weight:bold; letter-spacing:0.1em; color:var(--accent-blue);">SYSTEM LOGS</span>
+                        <div style="margin-left:auto;">v1.0.4-PRO</div>
+                    </div>
+                    <div id="systemLogConsole" class="log-content">
+                        <div style="color: var(--text-muted); font-style: italic;">Waiting for connection...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="snScanPage" class="hidden dashboard-container p-4">
+        <div class="scan-container">
+            
+            <div class="scan-card">
+                <h2 class="scan-title">
+                    <span class="text-blue">SCAN</span> BATTERY SN
+                </h2>
+
+                <div id="reader" class="hidden"></div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-400 text-sm font-bold mb-2" style="color:var(--text-muted);">電池序號 (Serial Number)</label>
+                    <div class="scan-input-wrapper">
+                        <input type="text" id="inputSnField" 
+                            class="scan-input" 
+                            placeholder="請掃描或輸入序號..." autofocus>
+                        
+                        <button id="cameraScanBtn" class="scan-camera-btn" title="開啟相機掃描">
+                            <svg style="width:1.5rem; height:1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </button>
+                    </div>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">* 支援：掃碼槍直接輸入 / 手機相機掃描</p>
+                </div>
+
+                <button id="submitSnBtn" class="scan-btn-main">
+                    <span>開始測試</span>
+                    <svg style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+
+                <button id="cancelSnBtn" class="scan-btn-cancel">
+                    取消並斷開連線
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div id="dashboardPage" class="hidden min-h-screen bg-[#0f172a] text-white p-4 font-sans">
+        <div class="max-w-[1400px] mx-auto h-[calc(100vh-2rem)] flex gap-4">
+            
+            <div class="w-1/4 bg-[#1e293b] rounded-xl p-4 flex flex-col border border-gray-700 shadow-xl">
+                <div class="flex items-center mb-6 pl-2 border-l-4 border-blue-500">
+                    <h2 class="text-xl font-bold tracking-wider">測試流程</h2>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                    <div class="test-step-item p-3 bg-[#0f172a] rounded-lg border border-gray-700 hover:border-gray-500 transition-all cursor-pointer opacity-50" id="step1">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border border-gray-500 flex items-center justify-center text-xs text-gray-400">1</div>
+                                <span class="text-sm font-medium">比對內外電池序號</span>
+                            </div>
+                            <span class="text-[10px] text-gray-500 status-text">IDLE</span>
+                        </div>
+                    </div>
+
+                    <div class="test-step-item p-3 bg-[#0f172a] rounded-lg border border-gray-700 hover:border-gray-500 transition-all cursor-pointer" id="step2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border border-gray-500 flex items-center justify-center text-xs text-gray-400">2</div>
+                                <span class="text-sm font-medium">讀取 BMS 資訊</span>
+                            </div>
+                            <span class="text-[10px] text-blue-400 status-text">AUTO</span>
+                        </div>
+                    </div>
+
+                    <div class="test-step-item p-3 bg-[#0f172a] rounded-lg border border-gray-700 opacity-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border border-gray-500 flex items-center justify-center text-xs text-gray-400">3</div>
+                                <span class="text-sm font-medium">開啟 WakeUp 偵測</span>
+                            </div>
+                            <span class="text-[10px] text-gray-500">IDLE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                    <button id="dash_backBtn" class="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 py-2 rounded-lg text-sm transition-colors">
+                        返回搜尋頁面
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-4">
+                
+                <div class="h-16 bg-[#1e293b] rounded-xl border border-gray-700 flex items-center justify-between px-6 shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div id="statusDot" class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                        <span id="headerStatusText" class="text-gray-300 font-mono text-sm">Status: Disconnected</span>
+                    </div>
+                    <div class="text-gray-400 text-sm italic">Model: BatteryTester-V2.5</div>
+                    <button id="dash_disconnectReconnectBtn" class="bg-red-500/20 text-red-400 border border-red-500/50 px-4 py-1 rounded text-xs hover:bg-red-500 hover:text-white transition-all">
+                        中斷連線
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-4 gap-4 h-48">
+                    <div class="bg-[#1e293b] rounded-xl border border-gray-700 p-4 flex flex-col items-center justify-center relative shadow-lg group hover:border-blue-500/50 transition-all">
+                        <div class="text-5xl font-bold text-white mb-2 font-mono tracking-tighter" id="dashboardVoltage">0.0</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest">電壓 (mV)</div>
+                        <div class="absolute top-3 right-3 w-2 h-2 rounded-full bg-gray-600 group-hover:bg-blue-500 transition-colors"></div>
+                    </div>
+
+                    <div class="bg-[#1e293b] rounded-xl border border-gray-700 p-4 flex flex-col items-center justify-center relative shadow-lg group hover:border-red-500/50 transition-all">
+                        <div class="relative w-24 h-12 mb-2 flex items-end justify-center">
+                            <div class="text-5xl font-bold text-white font-mono tracking-tighter z-10" id="dashboardCurrent">0.0</div>
+                        </div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest">電流 (mA)</div>
+                        <div class="absolute w-24 h-12 border-4 border-gray-700 border-t-red-500 rounded-t-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-2 opacity-30"></div>
+                    </div>
+
+                    <div class="bg-[#1e293b] rounded-xl border border-gray-700 p-4 flex flex-col items-center justify-center relative shadow-lg group hover:border-green-500/50 transition-all">
+                        <div class="text-5xl font-bold text-green-400 mb-2 font-mono tracking-tighter">
+                            <span id="dashboardSOC">0</span><span class="text-2xl ml-1">%</span>
+                        </div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest">電量 (SOC)</div>
+                    </div>
+
+                    <div class="bg-[#1e293b] rounded-xl border border-gray-700 p-4 flex flex-col items-center justify-center relative shadow-lg">
+                        <div class="text-xs text-blue-400 mb-4">電池序列號 (SN)</div>
+                        <div class="text-xl font-bold text-white font-mono tracking-widest border-b border-dashed border-gray-600 pb-1" id="dashboardSN">
+                            -- -- -- --
+                        </div>
+                        <button id="readSnBtn" class="mt-4 text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded">
+                            讀取 SN
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 bg-black rounded-xl border border-gray-800 p-0 flex flex-col overflow-hidden shadow-inner">
+                    <div class="h-8 bg-[#1e293b] flex items-center px-4 border-b border-gray-800 gap-2">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span class="text-xs font-bold text-gray-400 tracking-wider">SYSTEM LOGS</span>
+                        <div class="ml-auto text-[10px] text-gray-600">v1.0.4-PRO</div>
+                    </div>
+                    <div id="systemLogConsole" class="flex-1 p-4 font-mono text-sm overflow-y-auto space-y-1 text-gray-300">
+                        <div class="text-gray-500 italic">Waiting for connection...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div> -->
+
+    <div id="communicationPage" class="hidden min-h-screen p-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <button id="backBtn" class="flex items-center text-primary hover:text-primary/80">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    返回
+                </button>
+                <h1 class="text-xl font-bold">設備通訊</h1>
+                <div class="flex items-center space-x-2">
+                    <div id="connectionStatus" class="flex items-center">
+                        <div id="statusIndicator" class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span id="statusText" class="text-sm text-green-600 dark:text-green-400">已連線</span>
+                    </div>
+                    <button id="disconnectReconnectBtn" class="text-sm text-white px-3 py-1 rounded transition-colors btn-disconnect">
+                        中斷連線
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
+                <div class="text-sm text-gray-600 dark:text-gray-400">已連接設備:</div>
+                <div id="connectedDeviceName" class="font-medium">模擬設備</div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold mb-3">接收數據 (15 Bytes)</h2>
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">16進制顯示:</span>
+                        <button id="clearReceivedBtn" class="text-sm text-red-500 hover:text-red-600">清除</button>
+                    </div>
+                    <div id="receivedData" class="hex-input bg-white dark:bg-gray-900 p-3 rounded border font-mono text-sm min-h-[3rem] border-gray-300 dark:border-gray-600">
+                        等待接收數據...
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        最後更新: <span id="lastUpdateTime">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold mb-3">設備參數控制 (Protocol)</h2>
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <label class="font-bold text-lg">BATTERY INFORMATION:</label>
+                    </div>
+                    <div class="param-control-item">
+                        <label for="bmsSnStr" class="param-label">電池序號:</label>
+                        <div class="param-input-group">
+                             <span id="bmsSnStr" class="param-value-display">N/A</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button id="readBmsSnBtn" class="param-btn bg-primary text-white hover:bg-primary/90">讀取電池序號</button>
+                        </div>
+ 
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 bg-white p-4 rounded-lg shadow-md">
+
+                        <div class="col-span-full border-b-2 border-blue-500 pb-2 mb-2">
+                            <div class="flex items-center">
+                                <label class="font-bold text-lg">BMS_ACCESS:</label>
+                            </div>
+                        </div>
+    
+                        <div class="grid grid-cols-[1fr_9rem] gap-2 items-center bg-gray-50 p-2 rounded border">
+                            <label for="keyStatusValue" class="text-gray-600 font-medium truncate" title="Key Status">Key Status:</label>
+                            <span id="keyStatusValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                        <div class="grid grid-cols-[1fr_9rem] gap-2 items-center bg-gray-50 p-2 rounded border">
+                            <label for="iotConnectionValue" class="text-gray-600 font-medium truncate" title="IOT Connection">IOT Connection:</label>
+                            <span id="iotConnectionValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                        <div class="grid grid-cols-[1fr_9rem] gap-2 items-center bg-gray-50 p-2 rounded border">
+                            <label for="dongleConnectionValue" class="text-gray-600 font-medium truncate" title="Dongle Connection">Dongle Connection:</label>
+                            <span id="dongleConnectionValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                        <div class="grid grid-cols-[1fr_9rem] gap-2 items-center bg-gray-50 p-2 rounded border">
+                            <label for="chargerConnectionValue" class="text-gray-600 font-medium truncate" title="Charger Connection">Charger Connection:</label>
+                            <span id="chargerConnectionValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                        <div class="grid grid-cols-[1fr_9rem] gap-2 items-center bg-gray-50 p-2 rounded border">
+                            <label for="_2ndOvStatusValue" class="text-gray-600 font-medium truncate" title="2nd OV Status">2nd OV Status:</label>
+                            <span id="_2ndOvStatusValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                    </div>
+
+                    <!-- <div class="param-control-item vertical-label-layout">
+                        <div class="label-value-pair">
+                            <label for="deviceHeaderValue" class="param-label">Device Header:</label>
+                            <span id="deviceHeaderValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <div style="flex-basis: 100%; height: 0;"></div>
+
+                        <div class="label-value-pair">
+                            <label for="sohValue" class="param-label">SOH:</label>
+                            <span id="sohValue" class="param-value-display">N/A</span>
+                        </div>
+                        <div class="label-value-pair">
+                            <label for="pdStatusValue" class="param-label">PD Status:</label>
+                            <span id="pdStatusValue" class="param-value-display">N/A</span>
+                        </div>
+                        <div class="label-value-pair">
+                            <label for="timeCountValue" class="param-label">Time Count(Pack自動進入運輸模式時間):</label>
+                            <span id="timeCountValue" class="param-value-display">N/A</span>
+                        </div>
+                        <div class="label-value-pair">
+                            <label for="modeValue" class="param-label">MODE:</label>
+                            <span id="modeValue" class="param-value-display">N/A</span>
+                        </div>
+                        <div class="label-value-pair">
+                            <label for="batteryStatusValue" class="param-label">Battery Status:</label>
+                            <span id="batteryStatusValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div> -->
+
+
+
+                    <div class="grid grid-cols-2 gap-4 bg-white p-4 rounded-lg shadow-md">
+
+                        <div class="col-span-full border-b-2 border-blue-500 pb-2 mb-2">
+                            <div class="flex items-center">
+                                <label class="font-bold text-lg">BMS_INFO_1:</label>
+                            </div>
+                            </div>
+
+                            <div class="flex items-center bg-gray-50 p-2 rounded border">
+                            <label class="w-[22rem] flex-shrink-0 text-gray-600 font-medium">Device Header:</label>
+                            <span id="deviceHeaderValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                        <div class="flex items-center bg-gray-50 p-2 rounded border">
+                                <label class="w-[22rem] flex-shrink-0 text-gray-600 font-medium">SOH:</label>
+                                <span id="sohValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                        <div class="flex items-center bg-gray-50 p-2 rounded border">
+                            <label class="w-[22rem] flex-shrink-0 text-gray-600 font-medium">PD Status:</label>
+                            <span id="pdStatusValue" class="font-mono text-blue-600 font-bold break-all">N/A</span>
+                        </div>
+
+                        <div class="col-span-full flex items-center bg-gray-50 p-2 rounded border">
+                            <label class="w-[22rem] flex-shrink-0 text-gray-600 font-medium">Time Count (Pack自動進入運輸模式時間):</label>
+                            <span id="timeCountValue" class="font-mono text-blue-600 font-bold">N/A</span>
+                        </div>
+
+                        <div class="flex items-start bg-gray-50 p-2 rounded border">
+                            <label class="w-[22rem] flex-shrink-0 text-gray-600 font-medium">MODE:</label>
+                            <span id="modeValue" class="font-mono text-blue-600 font-bold break-all">N/A</span>
+                        </div>
+
+                        <div class="flex items-center bg-gray-50 p-2 rounded border">
+                            <label class="w-[22rem] flex-shrink-0 text-gray-600 font-medium">Battery Status:</label>
+                            <span id="batteryStatusValue" class="font-mono text-blue-600 font-bold break-all">N/A</span>
+                        </div>
+
+                    </div>
+
+                    <div class="flex items-center">
+                        <label class="font-bold text-lg">BMS_INFO_2:</label>
+                    </div>
+                    <div class="param-control-item">
+                        <label for="batteryVoltageValue" class="param-label">Voltage:</label>
+                        <div class="param-input-group">
+                             <span id="batteryVoltageValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="batteryCurrentValue" class="param-label">Current:</label>
+                        <div class="param-input-group">
+                             <span id="batteryCurrentValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="cellMaxVoltageValue" class="param-label">Cell Vmax:</label>
+                        <div class="param-input-group">
+                             <span id="cellMaxVoltageValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="cellMinVoltageValue" class="param-label">Cell Vmin:</label>
+                        <div class="param-input-group">
+                             <span id="cellMinVoltageValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <label class="font-bold text-lg">BMS_INFO_3:</label>
+                    </div>
+                    <div class="param-control-item">
+                        <label for="cellMaxTempValue" class="param-label">Cell Tmax:</label>
+                        <div class="param-input-group">
+                             <span id="cellMaxTempValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="cellMinTempValue" class="param-label">Cell Tmin:</label>
+                        <div class="param-input-group">
+                             <span id="cellMinTempValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="cellFetTempValue" class="param-label">FET Temp:</label>
+                        <div class="param-input-group">
+                             <span id="cellFetTempValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="remainCapacityValue" class="param-label">RC:</label>
+                        <div class="param-input-group">
+                             <span id="remainCapacityValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="stateOfChargeValue" class="param-label">SOC:</label>
+                        <div class="param-input-group">
+                             <span id="stateOfChargeValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="chargeDischargeCyclesValue" class="param-label">Cycles:</label>
+                        <div class="param-input-group">
+                             <span id="chargeDischargeCyclesValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <label class="font-bold text-lg">BMS_DIAG_1:</label>
+                    </div>
+                    <div class="param-control-item">
+                        <label for="fullyChargedCapacityValue" class="param-label">FCC:</label>
+                        <div class="param-input-group">
+                             <span id="fullyChargedCapacityValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="energyOfSoH100Value" class="param-label">Initial SoH Energy:</label>
+                        <div class="param-input-group">
+                             <span id="energyOfSoH100Value" class="param-value-display">N/A</span>
+                        </div>
+
+                        <div style="flex-basis: 100%; height: 0;"></div>
+                        
+                        <label for="energyOfLastSohTestFccValue" class="param-label">Last SoH Energy (FCC):</label>
+                        <div class="param-input-group">
+                             <span id="energyOfLastSohTestFccValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <label class="font-bold text-lg">BMS_DIAG_2:</label>
+                    </div>
+                    <div class="param-control-item">
+                        <label for="mosfetTemperatureValue" class="param-label">FET Temp:</label>
+                        <div class="param-input-group">
+                             <span id="mosfetTemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="cpuTemperatureValue" class="param-label">CPU Temp:</label>
+                        <div class="param-input-group">
+                             <span id="cpuTemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="ntc1TemperatureValue" class="param-label">NTC1 Temp:</label>
+                        <div class="param-input-group">
+                             <span id="ntc1TemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="ntc2TemperatureValue" class="param-label">NTC2 Temp:</label>
+                        <div class="param-input-group">
+                             <span id="ntc2TemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="ntc3TemperatureValue" class="param-label">NTC3 Temp:</label>
+                        <div class="param-input-group">
+                             <span id="ntc3TemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="ntc4TemperatureValue" class="param-label">NTC4 Temp:</label>
+                        <div class="param-input-group">
+                             <span id="ntc4TemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="ntc5TemperatureValue" class="param-label">NTC5 Temp:</label>
+                        <div class="param-input-group">
+                             <span id="ntc5TemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="ntc6TemperatureValue" class="param-label">NTC6 Temp:</label>
+                        <div class="param-input-group">
+                             <span id="ntc6TemperatureValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <label class="font-bold text-lg">CONTROLLER INFORMATION:</label>
+                    </div>
+                    <div class="param-control-item">
+                        <label for="odoKmValue" class="param-label">總里程數:</label>
+                        <div class="param-input-group">
+                             <span id="odoKmValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="estKmValue" class="param-label">剩餘里程數:</label>
+                        <div class="param-input-group">
+                             <span id="estKmValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <div class="space-x-2">
+                            <button id="writeTrip1ToZeroBtn" class="param-btn bg-primary text-white hover:bg-primary/90">歸零</button>
+                        </div>
+
+                        <label for="trip1KmValue" class="param-label">旅程里程數1[自行歸0]:</label>
+                        <div class="param-input-group">
+                             <span id="trip1KmValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="trip2KmValue" class="param-label">旅程里程數2[重啟歸0]:</label>
+                        <div class="param-input-group">
+                             <span id="trip2KmValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="hallFaultValue" class="param-label">霍爾故障(電機):</label>
+                        <div class="param-input-group">
+                             <span id="hallFaultValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="throttleFaultValue" class="param-label">轉把故障:</label>
+                        <div class="param-input-group">
+                             <span id="throttleFaultValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="controllerFaultValue" class="param-label">控制器故障:</label>
+                        <div class="param-input-group">
+                             <span id="controllerFaultValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <div style="flex-basis: 100%; height: 0;"></div>
+
+                        <label for="undervoltageProtectionValue" class="param-label">欠壓保護:</label>
+                        <div class="param-input-group">
+                             <span id="undervoltageProtectionValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="controllerProtectionValue" class="param-label">控制器保護(其他可能的保護):</label>
+                        <div class="param-input-group">
+                             <span id="controllerProtectionValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="overcurrentProtectionValue" class="param-label">過流保護:</label>
+                        <div class="param-input-group">
+                             <span id="overcurrentProtectionValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="stalledRotorProtectionValue" class="param-label">堵轉保護:</label>
+                        <div class="param-input-group">
+                             <span id="stalledRotorProtectionValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="displayCommunicationFaultValue" class="param-label">儀表通訊(一線通通訊)故障:</label>
+                        <div class="param-input-group">
+                             <span id="displayCommunicationFaultValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="breakFaultValue" class="param-label">煞把故障:</label>
+                        <div class="param-input-group">
+                             <span id="breakFaultValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="motorPhaseLossFaultValue" class="param-label">電機缺相故障:</label>
+                        <div class="param-input-group">
+                             <span id="motorPhaseLossFaultValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="pModeFlagValue" class="param-label">P檔:</label>
+                        <div class="param-input-group">
+                             <span id="pModeFlagValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="breakFlagValue" class="param-label">剎車:</label>
+                        <div class="param-input-group">
+                             <span id="breakFlagValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="highSpeedFlagValue" class="param-label">速度模式:高速:</label>
+                        <div class="param-input-group">
+                             <span id="highSpeedFlagValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="reverseFlagValue" class="param-label">倒車:</label>
+                        <div class="param-input-group">
+                             <span id="reverseFlagValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="cruiseFlagValue" class="param-label">巡航狀態:</label>
+                        <div class="param-input-group">
+                             <span id="cruiseFlagValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="softStartValue" class="param-label">緩啟動:</label>
+                        <div class="param-input-group">
+                             <span id="softStartValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="secondStartValue" class="param-label">二次啟動:</label>
+                        <div class="param-input-group">
+                             <span id="secondStartValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="speedLimitValue" class="param-label">當前檔位最高限速值:</label>
+                        <div class="param-input-group">
+                             <span id="speedLimitValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="currentLimitValue" class="param-label">控制器限流值:</label>
+                        <div class="param-input-group">
+                             <span id="currentLimitValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <label for="underVoltageValue" class="param-label">控制器欠壓值:</label>
+                        <div class="param-input-group">
+                             <span id="underVoltageValue" class="param-value-display">N/A</span>
+                        </div>
+
+                        <div class="space-x-2">
+                            <button id="readCntrSetValueBtn" class="param-btn bg-primary text-white hover:bg-primary/90">讀取控制器設定值</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="wheelDiameterValue" class="param-label">輪圓周長:</label>
+                        <div class="param-input-group">
+                             <span id="wheelDiameterValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="polePairsValue" class="param-label">磁對數:</label>
+                        <div class="param-input-group">
+                             <span id="polePairsValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="hallChangesValue" class="param-label">0.5秒內的霍爾數:</label>
+                        <div class="param-input-group">
+                             <span id="hallChangesValue" class="param-value-display">N/A</span>
+                        </div>
+                        <label for="speedKmhValue" class="param-label">時速:</label>
+                        <div class="param-input-group">
+                             <span id="speedKmhValue" class="param-value-display">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="odoKmInput" class="param-label">總里程數設定(km):</label>
+                        <div class="param-input-group">
+                            <input type="number" id="odoKmInput" min="0" max="16777215" placeholder="0-16777215" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeOdoKmBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="trip1KmInput" class="param-label">旅程里程數1設定(km):</label>
+                        <div class="param-input-group">
+                            <input type="number" id="trip1KmInput" min="0" max="16777215" placeholder="0-16777215" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeTrip1KmBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="wheelDiameterInput" class="param-label">輪圓周長設定:</label>
+                        <div class="param-input-group">
+                            <input type="number" id="wheelDiameterInput" min="0" max="65535" placeholder="0-65535" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeWheelDiameterBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="SoftStartInput" class="param-label">緩啟動設定:</label>
+                        <div class="param-input-group">
+                            <input type="number" id="SoftStartInput" min="0" max="255" placeholder="0-255" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeSoftStartBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="SecondStartInput" class="param-label">二次啟動設定:</label>
+                        <div class="param-input-group">
+                            <input type="number" id="SecondStartInput" min="0" max="255" placeholder="0-255" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeSecondStartBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="SpeedLimitInput" class="param-label">當前檔位最高限速值設定:</label>
+                        <div class="param-input-group">
+                            <input type="number" id="SpeedLimitInput" min="0" max="255" placeholder="0-255" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeSpeedLimitBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="CurrentLimitInput" class="param-label">控制器限流值設定:</label>
+                        <div class="param-input-group">
+                            <input type="number" id="CurrentLimitInput" min="0" max="255" placeholder="0-255" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeCurrentLimitBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="UnderVoltageInput" class="param-label">控制器欠壓值設定:</label>
+                        <div class="param-input-group">
+                            <input type="number" id="UnderVoltageInput" min="0" max="65535" placeholder="0-65535" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="space-x-2">
+                            <button id="writeUnderVoltageBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <label class="param-label"><br></label>
+                    
+
+                    <div class="param-control-item">
+                        <label for="deviceModeSelect" class="param-label">設備模式:</label>
+                        <div class="param-input-group">
+                            <select id="deviceModeSelect" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="0">一般模式 (0x00)</option>
+                                <option value="1">運輸模式 (0x01)</option>
+                                <option value="2">儲存模式 (0x02)</option>
+                                <option value="3">待命模式 (0x03)</option>
+                                <option value="4">一般模式 (0x04)</option>
+                                <option value="5">無效，BMS無需處理 (0xFF)</option>
+                            </select>
+                            <span id="deviceModeValue" class="param-value-display">N/A</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button id="readDeviceModeBtn" class="param-btn bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">讀取</button>
+                            <button id="writeDeviceModeBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label for="thresholdInput" class="param-label">感測器閾值:</label>
+                        <div class="param-input-group">
+                            <input type="number" id="thresholdInput" min="0" max="65535" placeholder="0-65535" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                             <span id="thresholdValue" class="param-value-display">N/A</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button id="readThresholdBtn" class="param-btn bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">讀取</button>
+                            <button id="writeThresholdBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+                    
+                    <div class="param-control-item">
+                        <label for="deviceNameInput" class="param-label">設備名稱:</label>
+                        <div class="param-input-group">
+                            <input type="text" id="deviceNameInput" maxlength="8" placeholder="最多8個字元" class="w-full text-base p-1 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent">
+                             <span id="deviceNameValue" class="param-value-display" style="min-width: 100px;">N/A</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button id="readDeviceNameBtn" class="param-btn bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">讀取</button>
+                            <button id="writeDeviceNameBtn" class="param-btn bg-primary text-white hover:bg-primary/90">寫入</button>
+                        </div>
+                    </div>
+                    
+                    <div class="param-control-item">
+                        <label class="param-label">狀態旗標:</label>
+                        <div id="statusFlagsValue" class="param-input-group text-sm text-gray-500 dark:text-gray-400">
+                           等待讀取...
+                        </div>
+                        <div class="space-x-2">
+                            <button id="readStatusFlagsBtn" class="param-btn bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">讀取</button>
+                        </div>
+                    </div>
+
+                    <div class="param-control-item">
+                        <label class="param-label">LED控制:</label>
+                        <div class="param-input-group">
+                           <span class="text-sm text-gray-500 dark:text-gray-400">發送一次性指令</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button id="toggleLedBtn" class="param-btn bg-yellow-500 text-white hover:bg-yellow-600">切換LED</button>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+            
+
+            <div>
+                <h2 class="text-lg font-semibold mb-3">發送數據 (15 Bytes)</h2>
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <div class="grid grid-cols-5 gap-2 mb-4">
+                        <div class="col-span-5 grid grid-cols-15 gap-1" id="hexInputs"></div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button id="clearSendBtn" class="text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                            清除全部
+                        </button>
+                        <button id="fillTestBtn" class="text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                            填入測試數據
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">預覽 (16進制):</div>
+                        <div id="sendPreview" class="hex-input bg-white dark:bg-gray-900 p-2 rounded border text-sm border-gray-300 dark:border-gray-600">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</div>
+                    </div>
+
+                    <button id="sendBtn" class="w-full bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                        發送數據
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="protocol.js"></script>
+    <script>
+        
+    </script>
+</body>
+</html>
